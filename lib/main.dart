@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-
-import './pizza.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,12 +11,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter JSON Demo - Dim',
+      title: 'Flutter SharedPreferences - Dim',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'JSON - Dim'),
+      home: const MyHomePage(title: 'SharedPreferences - Dim'),
     );
   }
 }
@@ -34,43 +31,33 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // List untuk menampung objek Pizza hasil parsing
-  List<Pizza> myPizzas = [];
+  // Variabel untuk menyimpan jumlah berapa kali aplikasi dibuka
+  int appCounter = 0;
 
-  // Method untuk membaca JSON dan mengonversinya menjadi List<Pizza>
-  Future<List<Pizza>> readJsonFile() async {
-    // Membaca file JSON tidak konsisten (Praktikum 2)
-    String myString = await DefaultAssetBundle.of(context)
-        .loadString('assets/pizzalist.json');
-
-    List pizzaMapList = jsonDecode(myString);
-    List<Pizza> myPizzas = [];
-
-    for (var pizza in pizzaMapList) {
-      Pizza myPizza = Pizza.fromJson(pizza);
-      myPizzas.add(myPizza);
-    }
-
-    // Mengonversi kembali ke JSON string dan mencetaknya di Debug Console (Slide 12)
-    String json = convertToJSON(myPizzas);
-    print(json);
-
-    return myPizzas;
+  // Method untuk membaca dan menambah nilai counter di SharedPreferences
+  Future readAndWritePreference() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    appCounter = prefs.getInt('appCounter') ?? 0;
+    appCounter++;
+    await prefs.setInt('appCounter', appCounter);
+    setState(() {
+      appCounter = appCounter;
+    });
   }
 
-  // Method serialisasi List<Pizza> kembali ke JSON String (Slide 12)
-  String convertToJSON(List<Pizza> pizzas) {
-    return jsonEncode(pizzas.map((pizza) => jsonEncode(pizza)).toList());
+  // Method untuk mereset/menghapus nilai counter
+  Future deletePreference() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    setState(() {
+      appCounter = 0;
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    readJsonFile().then((value) {
-      setState(() {
-        myPizzas = value;
-      });
-    });
+    readAndWritePreference();
   }
 
   @override
@@ -80,17 +67,22 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      // Menampilkan daftar objek Pizza dalam ListView (Slide 11)
-      body: ListView.builder(
-        itemCount: myPizzas.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(myPizzas[index].pizzaName),
-            subtitle: Text(
-              '${myPizzas[index].description} - \$${myPizzas[index].price}',
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Text(
+              'You have opened the app $appCounter times.',
+              style: const TextStyle(fontSize: 18),
             ),
-          );
-        },
+            ElevatedButton(
+              onPressed: () {
+                deletePreference();
+              },
+              child: const Text('Reset counter'),
+            ),
+          ],
+        ),
       ),
     );
   }
