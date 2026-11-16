@@ -1,6 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,12 +11,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter File Read/Write - Dim',
+      title: 'Flutter Secure Storage - Dim',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'File Read/Write - Dim'),
+      home: const MyHomePage(title: 'Secure Storage - Dim'),
     );
   }
 }
@@ -32,52 +31,27 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String documentsPath = '';
-  String tempPath = '';
+  final pwdController = TextEditingController();
+  String myPass = '';
 
-  // Variabel penampung file dan isi teks yang dibaca
-  late File myFile;
-  String fileText = '';
+  final storage = const FlutterSecureStorage();
+  final myKey = 'myPass';
 
-  Future getPaths() async {
-    final docDir = await getApplicationDocumentsDirectory();
-    final tempDir = await getTemporaryDirectory();
-    setState(() {
-      documentsPath = docDir.path;
-      tempPath = tempDir.path;
-    });
+  // Menulis data terenkripsi ke Secure Storage
+  Future writeToSecureStorage() async {
+    await storage.write(key: myKey, value: pwdController.text);
   }
 
-  // Method untuk menulis isi ke dalam file pizzas.txt
-  Future<bool> writeFile() async {
-    try {
-      await myFile.writeAsString('Margherita, Capricciosa, Napoli');
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  // Method untuk membaca isi dari file pizzas.txt
-  Future<bool> readFile() async {
-    try {
-      String fileContent = await myFile.readAsString();
-      setState(() {
-        fileText = fileContent;
-      });
-      return true;
-    } catch (e) {
-      return false;
-    }
+  // Membaca data terenkripsi dari Secure Storage
+  Future<String> readFromSecureStorage() async {
+    String secret = await storage.read(key: myKey) ?? '';
+    return secret;
   }
 
   @override
-  void initState() {
-    super.initState();
-    getPaths().then((_) {
-      myFile = File('$documentsPath/pizzas.txt');
-      writeFile();
-    });
+  void dispose() {
+    pwdController.dispose();
+    super.dispose();
   }
 
   @override
@@ -87,34 +61,46 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Doc path:\n$documentsPath',
-              style: const TextStyle(fontSize: 16),
-            ),
-            Text(
-              'Temp path:\n$tempPath',
-              style: const TextStyle(fontSize: 16),
-            ),
-            Center(
-              child: ElevatedButton(
-                child: const Text('Read File'),
-                onPressed: () => readFile(),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              TextField(
+                controller: pwdController,
+                decoration: const InputDecoration(
+                  labelText: 'Masukkan Data Rahasia',
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            Text(
-              fileText,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+              const SizedBox(height: 20),
+              ElevatedButton(
+                child: const Text('Save Value'),
+                onPressed: () {
+                  writeToSecureStorage();
+                },
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              ElevatedButton(
+                child: const Text('Read Value'),
+                onPressed: () {
+                  readFromSecureStorage().then((value) {
+                    setState(() {
+                      myPass = value;
+                    });
+                  });
+                },
+              ),
+              const SizedBox(height: 24),
+              Text(
+                myPass,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
