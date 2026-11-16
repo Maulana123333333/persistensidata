@@ -1,0 +1,69 @@
+[
+  {
+    "id": "1",
+    "pizzaName": "Margherita",
+    "description": "Pizza dengan saus tomat, keju mozzarella segar, dan daun basil",
+    "price": "8.75",
+    "imageUrl": "images/margherita.png"
+  },
+  {
+    "id": 2,
+    "pizzaName": null,
+    "description": "Pizza dengan saus tomat, bawang putih, dan oregano",
+    "price": 7.50
+  },
+  {
+    "id": "tiga",
+    "pizzaName": "Napoli",
+    "price": "harga_salah",
+    "imageUrl": null
+  },
+  {
+    "id": 4,
+    "pizzaName": "Carciofi",
+    "description": "Pizza dengan saus tomat, mozzarella segar, dan artichoke",
+    "price": 8.80,
+    "imageUrl": "images/carciofi.png"
+  },
+  {
+    "id": "5",
+    "pizzaName": "Bufala",
+    "description": "Pizza dengan saus tomat, mozzarella kerbau, dan basil",
+    "price": "12.50",
+    "imageUrl": "images/bufala.png"
+  },
+  {
+    "id": 6,
+    "pizzaName": "Pepperoni",
+    "description": "Pizza dengan saus tomat, mozzarella, dan pepperoni pedas",
+    "price": 10.50,
+    "imageUrl": "images/pepperoni.png"
+  },
+  {
+    "id": 7,
+    "pizzaName": null,
+    "description": "Pizza dengan empat jenis keju: mozzarella, gorgonzola, parmesan, dan fontina",
+    "price": 11.75,
+    "imageUrl": "images/quattro_formaggi.png"
+  },
+  {
+    "id": "8",
+    "pizzaName": "Capricciosa",
+    "description": "Pizza dengan mozzarella, daging asap, jamur, artichoke, dan tomat",
+    "price": "11.20",
+    "imageUrl": "images/capricciosa.png"
+  },
+  {
+    "id": 9,
+    "pizzaName": "Diavola",
+    "price": 10.80,
+    "imageUrl": "images/diavola.png"
+  },
+  {
+    "id": 10,
+    "pizzaName": "Hawaiian",
+    "description": "Pizza dengan saus tomat, mozzarella, daging asap, dan nanas",
+    "price": "9.90",
+    "imageUrl": "images/hawaiian.png"
+  }
+]
