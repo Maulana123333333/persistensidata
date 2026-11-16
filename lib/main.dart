@@ -1,8 +1,6 @@
-import 'dart:convert';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
-
-import './pizza.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,12 +12,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter JSON Demo - Dim',
+      title: 'Flutter File Read/Write - Dim',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'JSON - Dim'),
+      home: const MyHomePage(title: 'File Read/Write - Dim'),
     );
   }
 }
@@ -34,42 +32,51 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // List untuk menampung objek Pizza hasil parsing
-  List<Pizza> myPizzas = [];
+  String documentsPath = '';
+  String tempPath = '';
 
-  // Method untuk membaca JSON dan mengonversinya menjadi List<Pizza>
-  Future<List<Pizza>> readJsonFile() async {
-    // Membaca file JSON tidak konsisten (Praktikum 2)
-    String myString = await DefaultAssetBundle.of(context)
-        .loadString('assets/pizzalist.json');
+  // Variabel penampung file dan isi teks yang dibaca
+  late File myFile;
+  String fileText = '';
 
-    List pizzaMapList = jsonDecode(myString);
-    List<Pizza> myPizzas = [];
-
-    for (var pizza in pizzaMapList) {
-      Pizza myPizza = Pizza.fromJson(pizza);
-      myPizzas.add(myPizza);
-    }
-
-    // Mengonversi kembali ke JSON string dan mencetaknya di Debug Console (Slide 12)
-    String json = convertToJSON(myPizzas);
-    print(json);
-
-    return myPizzas;
+  Future getPaths() async {
+    final docDir = await getApplicationDocumentsDirectory();
+    final tempDir = await getTemporaryDirectory();
+    setState(() {
+      documentsPath = docDir.path;
+      tempPath = tempDir.path;
+    });
   }
 
-  // Method serialisasi List<Pizza> kembali ke JSON String (Slide 12)
-  String convertToJSON(List<Pizza> pizzas) {
-    return jsonEncode(pizzas.map((pizza) => jsonEncode(pizza)).toList());
+  // Method untuk menulis isi ke dalam file pizzas.txt
+  Future<bool> writeFile() async {
+    try {
+      await myFile.writeAsString('Margherita, Capricciosa, Napoli');
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Method untuk membaca isi dari file pizzas.txt
+  Future<bool> readFile() async {
+    try {
+      String fileContent = await myFile.readAsString();
+      setState(() {
+        fileText = fileContent;
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    readJsonFile().then((value) {
-      setState(() {
-        myPizzas = value;
-      });
+    getPaths().then((_) {
+      myFile = File('$documentsPath/pizzas.txt');
+      writeFile();
     });
   }
 
@@ -80,17 +87,35 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      // Menampilkan daftar objek Pizza dalam ListView (Slide 11)
-      body: ListView.builder(
-        itemCount: myPizzas.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(myPizzas[index].pizzaName),
-            subtitle: Text(
-              '${myPizzas[index].description} - \$${myPizzas[index].price}',
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Doc path:\n$documentsPath',
+              style: const TextStyle(fontSize: 16),
             ),
-          );
-        },
+            Text(
+              'Temp path:\n$tempPath',
+              style: const TextStyle(fontSize: 16),
+            ),
+            Center(
+              child: ElevatedButton(
+                child: const Text('Read File'),
+                onPressed: () => readFile(),
+              ),
+            ),
+            Text(
+              fileText,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
